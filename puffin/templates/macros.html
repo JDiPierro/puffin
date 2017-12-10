@@ -1,23 +1,59 @@
+{% import "bootstrap/wtf.html" as wtf %}
+
 {% macro application_thumbnail(application) %}
-    <div class="col-sm-4 col-md-3">
+    <div class="col-sm-12 col-md-6">
     <div class="app thumbnail">
-      <a href="{{ url_for('application', application_id=application.application_id) }}"><img src="{{ url_for('media', path=application.logo) }}" alt="{{ application.name }}"></a>
-      <div class="caption">
-        <h3><a href="{{ url_for('application', application_id=application.application_id) }}">{{ application.name }}</a></h3>
-        <h4>{{ application.subtitle }}</h4>
-      </div>
+        <div class="row">
+            <div class="col-sm-4">
+                {% if application %}
+                    <a href="{{ url_for('application', application_id=application.application_id) }}"><img src="{{ url_for('media', path=application.logo) }}" alt="{{ application.name }}"></a>
+                {% else %}
+                    <a href="https://github.com/puffinrocks/apps" title="add new application"><img src="{{ url_for('static', filename='images/new_application.png') }}" alt="new application"></a>
+                {% endif %}
+            </div>
+            <div class="col-sm-8">
+                <div class="caption">
+                    {% if application %}
+                        <h3><a href="{{ url_for('application', application_id=application.application_id) }}">{{ application.name }}</a></h3>
+                        <h4>{{ application.subtitle }}</h4>
+                    {% else %}
+                        <h3>&nbsp;</h3>
+                        <h4>add new application to the catalog</h4>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
   </div>
 {% endmacro %}
 
-{% macro new_application_thumbnail() %}
-    <div class="col-sm-4 col-md-3">
-    <div class="app thumbnail new">
-      <a href="https://github.com/puffinrocks/apps" title="add new application"><img src="{{ url_for('static', filename='images/new_application.png') }}" alt="new application"></a>
-      <div class="caption">
-        <h3>&nbsp;</h3>
-        <h4>add new application to the catalog</h4>
-      </div>
-    </div>
-  </div>
+{% macro application_control_form(application, form, application_status, application_domain) %}
+    <form class="form" method="post" role="form" action="">
+        {{ form.hidden_tag() }}
+        {{ wtf.form_errors(form, hiddens="only") }}
+        {% if application_status == ApplicationStatus.CREATED %}
+        <a class="btn btn-primary" role="button" href="{{ "http://" + application_domain }}" target="_blank"><span class="glyphicon glyphicon-share-alt"></span> Open</a>
+        <button type="submit" name="stop" value="Stop" class="btn btn-danger"><span class="glyphicon glyphicon-stop"></span> Stop</button>
+        <button type="button" class="btn btn-info" disabled="disabled" title="Stop the application before modifying the settings"><span class="glyphicon glyphicon-cog"></span> Settings</button>
+        <button type="button" class="btn btn-warning" disabled="disabled" title="Stop the application before managing backups"><span class="glyphicon glyphicon-hdd"></span> Backup</button>
+        {% elif application_status == ApplicationStatus.DELETED %}
+        <button type="submit" name="start" value="Start" class="btn btn-success"><span class="glyphicon glyphicon-play"></span> Run</button>
+        <a class="btn btn-info" role="button" href="{{ url_for("application_settings", application_id=application.application_id) }}"><span class="glyphicon glyphicon-cog"></span> Settings</a>
+        <a class="btn btn-warning" role="button" href="{{ url_for("application_backup", application_id=application.application_id) }}"><span class="glyphicon glyphicon-hdd"></span> Backup</a>
+        {% elif application_status == ApplicationStatus.UPDATING %}
+        <button type="button" class="btn btn-warning blinking"><span class="glyphicon glyphicon-refresh"></span> Updating</button>
+        <script>
+            function check_status() {
+                $.get("{{ url_for('application_status', application_id=application.application_id) }}", function(data) {
+                    if (data.status != "UPDATING") {
+                        window.location.reload(false);
+                    }
+                }, "json");
+            }
+            setInterval(check_status, 2500);
+        </script>
+        {% else %}
+        <button type="button" class="btn btn-warning"><span class="glyphicon glyphicon-fire"></span> Error</button>
+        {% endif %}
+    </form>
 {% endmacro %}

@@ -76,11 +76,13 @@ def application(application_id):
         application_status = docker.get_application_status(client, current_user, application)
         application_domain = applications.get_application_domain(current_user, application)
         application_version = docker.get_application_version(client, current_user, application)
+        application_name = applications.get_application_name(current_user, application)
+        application_container_count = len(docker.get_containers(client, application_name))
 
     return flask.render_template('application.html', application=application,
         application_status=application_status, application_domain=application_domain,
         application_version=application_version, application_image_version=application_image_version,
-        form=form)
+        form=form, application_container_count=application_container_count)
 
 @app.route('/application/<application_id>.json', methods=['GET'])
 @login_required
@@ -96,7 +98,37 @@ def apps():
     client = docker.get_client()
     app_statuses = docker.get_application_statuses(client, current_user)
     apps = [a[0] for a in app_statuses if a[1] == applications.ApplicationStatus.CREATED]
-    return flask.render_template('applications.html', applications=apps)
+    
+    def application_instance_metadata(application):
+        form = forms.ApplicationForm()
+    
+        if form.validate_on_submit():
+            if form.start.data:
+                docker.create_application(client, current_user, application)
+        
+            if form.stop.data:
+                docker.delete_application(client, current_user, application)
+            return flask.redirect(flask.url_for('application', application_id=application.application_id))
+
+        application_status = docker.get_application_status(client, current_user, application)
+        application_image_version = docker.get_application_image_version(client, application)
+        application_version = docker.get_application_version(client, current_user, application)
+        application_name = applications.get_application_name(current_user, application)
+        application_domain = applications.get_application_domain(current_user, application)
+        application_container_count = len(docker.get_containers(client, application_name))
+        
+        return dict(
+            domain=application_domain,
+            image_version=application_image_version,
+            version=application_version,
+            container_count=application_container_count,
+            form=form,
+            status=application_status
+        )
+    apps_with_metadata = {app: application_instance_metadata(app) for app in apps}
+    
+    return flask.render_template('applications.html', applications=apps_with_metadata)
+
 
 @app.route('/media/<path:path>')
 def media(path):

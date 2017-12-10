@@ -1,5 +1,51 @@
 {% extends "base.html" %}
-{% from 'macros.html' import application_thumbnail %}
+{% from 'macros.html' import application_control_form with context %}
+
+{% macro application_maintenance_thumbnail(application, metadata) %}
+<div class="col-sm-12">
+    <div class="app thumbnail">
+        <div class="row">
+            <div class="col-sm-3">
+                <a href="{{ url_for('application', application_id=application.application_id) }}"><img src="{{ url_for('media', path=application.logo) }}" alt="{{ application.name }}"></a>
+            </div>
+            <div class="col-sm-9">
+                <h3><a href="{{ url_for('application', application_id=application.application_id) }}">{{ application.name }}</a></h3>
+                <div>
+                    <span>
+                        Version:
+                        {% set application_image_version = metadata['image_version'] %}
+                        {% if application_image_version: %}
+                            {{ application_image_version }}
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </span>
+                        &nbsp;
+                        <span>
+                        Running Version:
+                        {% set application_version = metadata['version'] %}
+                        {% if application_version: %}
+                            {{ application_version }}
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </span>
+                        &nbsp;
+                        <span>
+                        Containers:
+                        {% set application_container_count = metadata['container_count'] %}
+                        {{ application_container_count }}
+                    </span>
+                </div>
+                <div>
+                    {{ application_control_form(application, metadata['form'], metadata['status'], metadata['domain']) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}
+
 
 
 {% block title %}Puffin | My Applications{% endblock %}
@@ -10,10 +56,10 @@
 <div class="page-header">
     <h1>My Applications</h1>
 </div>
-	
+
 <div class="row apps">
-{% for application in applications %}
-    {{ application_thumbnail(application) }}
+{% for application, metadata in applications.items() %}
+    {{ application_maintenance_thumbnail(application, metadata) }}
 {% else %}
     No running applications. Go to the <a href="{{url_for("index")}}">catalog</a> to run some.
 {% endfor %}
