@@ -28,7 +28,7 @@
 {% endmacro %}
 
 {% macro application_control_form(application, form, application_status, application_domain) %}
-    <form class="form" method="post" role="form" action="">
+    <form class="form" method="post" role="form" action="/application/{{ application.application_id }}.html">
         {{ form.hidden_tag() }}
         {{ wtf.form_errors(form, hiddens="only") }}
         {% if application_status == ApplicationStatus.CREATED %}
