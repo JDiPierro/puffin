@@ -48,17 +48,17 @@
 
 
 
-{% block title %}Puffin | Running Applications{% endblock %}
+{% block title %}Puffin | My Applications{% endblock %}
 
 
 {% block page %}
 
 <div class="page-header">
-    <h1>Running Applications</h1>
+    <h1>My Applications</h1>
 </div>
 
 <div class="row apps">
-{% for application, metadata in applications.items() %}
+{% for application, metadata in applications %}
     {{ application_maintenance_thumbnail(application, metadata) }}
 {% else %}
     No running applications. Go to the <a href="{{url_for("index")}}">catalog</a> to run some.

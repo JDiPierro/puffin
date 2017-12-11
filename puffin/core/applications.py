@@ -63,11 +63,11 @@ class Application:
 
 
 class ApplicationStatus(enum.IntEnum):
+    ERROR = -1
     NEVER_STARTED = 0
     DELETED = 10
-    CREATED = 20
-    UPDATING = 30
-    ERROR = 90
+    UPDATING = 20
+    CREATED = 30
 
 
 class ApplicationSettings:
@@ -223,5 +223,3 @@ def get_application_volume_names(user, application):
     compose_volumes = application.volumes
     application_volumes = ['{}_{}'.format(application_name, volume) for volume in compose_volumes]
     return application_volumes
-    
-    

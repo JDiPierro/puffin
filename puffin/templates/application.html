@@ -61,9 +61,16 @@
             <div class="panel-heading">
                 <ul class="nav nav-tabs">
                     <li class="active"><a data-toggle="tab" href="#readme">Readme</a></li>
-                    {% if current_user.is_authenticated() and application_container_count %}
-                    <li><a data-toggle="tab" href="#containers">Containers</a></li>
-                    <li><a data-toggle="tab" href="#backups">Backups</a></li>
+                    {% if current_user.is_authenticated() %}
+                        {% if application_container_count %}
+                            <li><a data-toggle="tab" href="#containers">Containers</a></li>
+                        {% endif %}
+                        {% if application_volumes %}
+                            <li><a data-toggle="tab" href="#volumes">Volumes</a></li>
+                        {% endif %}
+                        {% if application_backups %}
+                            <li><a data-toggle="tab" href="#backups">Backups</a></li>
+                        {% endif %}
                     {% endif %}
                 </ul>
             </div>
@@ -118,6 +125,22 @@
                             {% else %}
                             No backups have been saved for this application.
                             {% endif %}
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="volumes">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th scope="col-3">Name</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for volume in application_volumes %}
+                                <tr>
+                                    <th scope="row">{{ volume }}</th>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     {% endif %}
                 </div>

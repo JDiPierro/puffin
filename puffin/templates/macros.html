@@ -40,6 +40,7 @@
         <button type="submit" name="start" value="Start" class="btn btn-success"><span class="glyphicon glyphicon-play"></span> Run</button>
         <a class="btn btn-info" role="button" href="{{ url_for("application_settings", application_id=application.application_id) }}"><span class="glyphicon glyphicon-cog"></span> Settings</a>
         <a class="btn btn-warning" role="button" href="{{ url_for("application_backup", application_id=application.application_id) }}"><span class="glyphicon glyphicon-hdd"></span> Backup</a>
+        <button type="submit" name="destroy" value="Destroy" class="btn btn-danger"><span class="glyphicon glyphicon-stop"></span> Destroy</button>
         {% elif application_status == ApplicationStatus.NEVER_STARTED %}
         <button type="submit" name="start" value="Start" class="btn btn-success"><span class="glyphicon glyphicon-play"></span> Run</button>
         <a class="btn btn-info" role="button" href="{{ url_for("application_settings", application_id=application.application_id) }}"><span class="glyphicon glyphicon-cog"></span> Settings</a>

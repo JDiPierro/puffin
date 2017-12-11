@@ -64,6 +64,7 @@ def application(application_id):
     application_container_count = None
     application_containers = None
     application_backups = None
+    application_volumes = None
     application_image_version = docker.get_application_image_version(client, application)
     form = None
 
@@ -77,6 +78,10 @@ def application(application_id):
 
             if form.stop.data:
                 docker.delete_application(client, current_user, application)
+
+            if form.destroy.data:
+                docker.destroy_application(client, current_user, application)
+                
             return flask.redirect(flask.url_for('application', application_id=application_id))
 
         application_status = docker.get_application_status(client, current_user, application)
@@ -88,13 +93,15 @@ def application(application_id):
             for container in docker.get_containers(client, application_name)
         }
         application_container_count = len(application_containers)
+        application_volumes = applications.get_application_volume_names(current_user, application)
         application_backups = backup.list(current_user, application)
 
     return flask.render_template('application.html', application=application,
         application_status=application_status, application_domain=application_domain,
         application_version=application_version, application_image_version=application_image_version,
         form=form, application_container_count=application_container_count,
-        application_containers=application_containers, application_backups=application_backups)
+        application_containers=application_containers, application_backups=application_backups,
+        application_volumes=application_volumes)
 
 @app.route('/application/<application_id>.json', methods=['GET'])
 @login_required
@@ -109,7 +116,7 @@ def application_status(application_id):
 def apps():
     client = docker.get_client()
     app_statuses = docker.get_application_statuses(client, current_user)
-    apps = [a[0] for a in app_statuses if a[1] == applications.ApplicationStatus.CREATED]
+    apps = [a[0] for a in app_statuses if a[1] != applications.ApplicationStatus.NEVER_STARTED]
     
     def application_instance_metadata(application):
         form = forms.ApplicationForm()
@@ -137,9 +144,13 @@ def apps():
             form=form,
             status=application_status
         )
-    apps_with_metadata = {app: application_instance_metadata(app) for app in apps}
+    apps_and_metadata = sorted(
+        [(app, application_instance_metadata(app)) for app in apps],
+        reverse=True,
+        key=lambda x: x[1]['status']
+    )
     
-    return flask.render_template('applications.html', applications=apps_with_metadata)
+    return flask.render_template('applications.html', applications=apps_and_metadata)
 
 
 @app.route('/media/<path:path>')

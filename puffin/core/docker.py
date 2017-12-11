@@ -74,6 +74,22 @@ def delete_application_task(user_id, application):
     backup.backup(user, application)
     applications.set_application_started(user, application, False)
 
+def destroy_application(client, user, application, async=True):
+    if get_application_status(client, user, application) == applications.ApplicationStatus.NEVER_STARTED:
+        raise RuntimeError("Application not installed, user: {}, application: {}".format(user.login, application.application_id))
+    name = applications.get_application_name(user, application)
+    volumes = get_application_volumes(client, user, application)
+    
+    if async:
+        queue.task(name, destroy_application_task, user.user_id, application, volumes)
+    else:
+        destroy_application_task(user.user_id, application, volumes)
+
+def destroy_application_task(user_id, application, volumes):
+    user = db.session.query(security.User).get(user_id)
+    for volume in volumes.values():
+        volume.remove()
+
 def run_service(user, application, service, *arguments, **environment):
     return compose.compose_run(machine_module.get_machine(), user, application, "run", "--rm", service, *arguments, **environment)
 
@@ -87,17 +103,21 @@ def get_application_statuses(client, user):
     application_statuses = []
     container_name = applications.get_application_name(user, None) + ".*_main_1"
     containers = get_containers(client, container_name)
-    for container in containers:
+    
+    def _app_id(container):
         user_application_id = _get_user_application_id(container)
         if not user_application_id:
+            return None
+        _, application_id = user_application_id
+        return application_id
+        
+    app_id_to_container = {_app_id(container): container for container in containers}
+    for app_id, application in apps.items():
+        if not app_id or app_id[0] == '_':
             continue
-        login, application_id = user_application_id
-
-        application = apps.get(application_id)
-        if not application:
-            continue
-
-        status = _get_application_status(user, application, container)
+        container = app_id_to_container.get(app_id)
+        volumes = get_application_volumes(client, user, application)
+        status = _get_application_status(user, application, container, volumes)
         application_statuses.append((application, status))
     return application_statuses
 

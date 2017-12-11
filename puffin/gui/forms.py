@@ -9,6 +9,7 @@ from puffin import app
 class ApplicationForm(flask_wtf.Form):
     start = wtforms.SubmitField('Start')
     stop = wtforms.SubmitField('Stop')
+    destroy = wtforms.SubmitField('Destroy')
 
 class ApplicationSettingsForm(flask_wtf.Form):
     domain = wtforms.StringField('Domain', description="If you change it then make sure you also configure it with your DNS provider")
