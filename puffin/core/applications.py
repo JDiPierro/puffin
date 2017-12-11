@@ -62,7 +62,7 @@ class Application:
         return hash(self.application_id)
 
 
-class ApplicationStatus(enum.Enum):
+class ApplicationStatus(enum.IntEnum):
     NEVER_STARTED = 0
     DELETED = 10
     CREATED = 20

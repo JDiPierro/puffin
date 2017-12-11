@@ -35,7 +35,7 @@ def get_client():
     return client
 
 def create_application(client, user, application, async=True):
-    if get_application_status(client, user, application) != applications.ApplicationStatus.DELETED:
+    if get_application_status(client, user, application) > applications.ApplicationStatus.DELETED:
         raise RuntimeError("Application already installed or updating, user: {}, application: {}".format(user.login, application.application_id))
     name = applications.get_application_name(user, application)
 

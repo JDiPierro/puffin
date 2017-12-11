@@ -12,13 +12,16 @@ from puffin.core import backup
 from puffin.core import stats
 from . import forms
 
+PUFFIN_DEPLOY_NAME = "Puffin"
+
 
 @app.context_processor
 def utility_processor():
     return dict(current_user=current_user, version=app.config.get("VERSION"),
             links=app.config.get("LINKS", []),
             ApplicationStatus=applications.ApplicationStatus,
-            stats=stats.get_stats())
+            stats=stats.get_stats(),
+            puffin_deploy_name=PUFFIN_DEPLOY_NAME)
 
 @app.route('/', methods=['GET'])
 def index():
@@ -60,6 +63,7 @@ def application(application_id):
     application_version = None
     application_container_count = None
     application_containers = None
+    application_backups = None
     application_image_version = docker.get_application_image_version(client, application)
     form = None
 
@@ -79,13 +83,18 @@ def application(application_id):
         application_domain = applications.get_application_domain(current_user, application)
         application_version = docker.get_application_version(client, current_user, application)
         application_name = applications.get_application_name(current_user, application)
-        application_containers = docker.get_containers(client, application_name)
+        application_containers = {
+            container: container.stats(decode=True, stream=False)
+            for container in docker.get_containers(client, application_name)
+        }
         application_container_count = len(application_containers)
+        application_backups = backup.list(current_user, application)
 
     return flask.render_template('application.html', application=application,
         application_status=application_status, application_domain=application_domain,
         application_version=application_version, application_image_version=application_image_version,
-        form=form, application_container_count=application_container_count, application_containers=application_containers)
+        form=form, application_container_count=application_container_count,
+        application_containers=application_containers, application_backups=application_backups)
 
 @app.route('/application/<application_id>.json', methods=['GET'])
 @login_required

@@ -63,6 +63,7 @@
                     <li class="active"><a data-toggle="tab" href="#readme">Readme</a></li>
                     {% if current_user.is_authenticated() and application_container_count %}
                     <li><a data-toggle="tab" href="#containers">Containers</a></li>
+                    <li><a data-toggle="tab" href="#backups">Backups</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -82,7 +83,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {% for container in application_containers %}
+                                {% for container, stats in application_containers.items() %}
                                 <tr>
                                     <th scope="row">{{ container.name }}</th>
                                     <td>{{ container.status }}</td>
@@ -91,6 +92,32 @@
                                 {% endfor %}
                                 </tbody>
                             </table>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="backups">
+                            {% if application_backups %}
+                                <table class="table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col-3">Timestamp</th>
+                                        <th scope="col-2"></th>
+                                        <th scope="col-2"></th>
+                                        <th scope="col-2"></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for backup in application_backups %}
+                                    <tr>
+                                        <th scope="row">{{ backup }}</th>
+                                        <td>Restore</td>
+                                        <td>Download</td>
+                                        <td>Delete</td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                            No backups have been saved for this application.
+                            {% endif %}
                         </div>
                     {% endif %}
                 </div>
