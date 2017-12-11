@@ -23,6 +23,7 @@ body {
   position: absolute;
   bottom: 0;
   width: 100%;
+  padding-top: 20px;
 
   /* Set the fixed height of the footer here */
   height: 60px;
@@ -39,8 +40,20 @@ body {
     border: 2px dashed #999;
 }
 
+.app.thumbnail a>img {
+    max-height: 200px;
+}
+
 .screenshots {
     margin-top: 20px;
+}
+
+.application .app-logo img {
+    max-height: 150px;
+}
+
+.application .info-panel .panel-heading {
+    padding: 0;
 }
 
 .blinking {

@@ -13,6 +13,7 @@
 
 {% block styles %}
 {{ super() }}
+<link href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
 <link rel="stylesheet" href="{{url_for('static', filename='styles/puffin.css')}}">
 {% endblock %}
 
@@ -50,7 +51,7 @@
             </ul>
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user.is_authenticated() %}
-                <li><a href="{{ url_for('applications') }}">My Applications</a></li>
+                <li><a href="{{ url_for('applications') }}">Running Applications</a></li>
                 <li><a href="{{ url_for('profile', login=current_user.login) }}">{{ current_user.name }}</a></li>
                 <li><a href="{{ url_for('security.logout') }}">Log Out</a></li>
                 {% else %}
@@ -96,6 +97,7 @@
 {% block footer %}
 
 <footer class="footer">
+    <hr>
 	<div class="container">
 		<p>
             Created by <a href="http://loomchild.net">loomchild</a> et al.

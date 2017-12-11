@@ -58,6 +58,8 @@ def application(application_id):
     application_status = None
     application_domain = None
     application_version = None
+    application_container_count = None
+    application_containers = None
     application_image_version = docker.get_application_image_version(client, application)
     form = None
 
@@ -77,12 +79,13 @@ def application(application_id):
         application_domain = applications.get_application_domain(current_user, application)
         application_version = docker.get_application_version(client, current_user, application)
         application_name = applications.get_application_name(current_user, application)
-        application_container_count = len(docker.get_containers(client, application_name))
+        application_containers = docker.get_containers(client, application_name)
+        application_container_count = len(application_containers)
 
     return flask.render_template('application.html', application=application,
         application_status=application_status, application_domain=application_domain,
         application_version=application_version, application_image_version=application_image_version,
-        form=form, application_container_count=application_container_count)
+        form=form, application_container_count=application_container_count, application_containers=application_containers)
 
 @app.route('/application/<application_id>.json', methods=['GET'])
 @login_required

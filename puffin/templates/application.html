@@ -9,11 +9,11 @@
 	
 <div class="application">
 
+    <div class="app-logo pull-right"><img class="logo" src="{{ url_for('media', path=application.logo) }}" alt="{{ application.name }}"></div>
+
     <div class="page-header">
         <h1>{{ application.name }}</h1>
     </div>
-
-    <div class="pull-right"><img class="logo" src="{{ url_for('media', path=application.logo) }}" alt="{{ application.name }}"></div>
 
     <div>
         <div class="meta">
@@ -57,8 +57,45 @@
 
         <hr/>
 
-        {{ application.description | markdown | bclean | blinkify | safe }}
-
+        <div class="info-panel panel panel-default">
+            <div class="panel-heading">
+                <ul class="nav nav-tabs">
+                    <li class="active"><a data-toggle="tab" href="#readme">Readme</a></li>
+                    {% if current_user.is_authenticated() and application_container_count %}
+                    <li><a data-toggle="tab" href="#containers">Containers</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div class="panel-body">
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane active" id="readme">
+                        {{ application.description | markdown | bclean | blinkify | safe }}
+                    </div>
+                    {% if current_user.is_authenticated() %}
+                        <div role="tabpanel" class="tab-pane" id="containers">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th scope="col-3">Name</th>
+                                    <th scope="col-3">Status</th>
+                                    <th scope="col-2"></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for container in application_containers %}
+                                <tr>
+                                    <th scope="row">{{ container.name }}</th>
+                                    <td>{{ container.status }}</td>
+                                    <td>Logs</td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
     </div>
 
 </div>
