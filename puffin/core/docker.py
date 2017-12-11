@@ -79,7 +79,8 @@ def run_service(user, application, service, *arguments, **environment):
 
 def get_application_status(client, user, application):
     container = get_main_container(client, user, application)
-    return _get_application_status(user, application, container)
+    volumes = get_application_volumes(client, user, application)
+    return _get_application_status(user, application, container, volumes)
 
 def get_application_statuses(client, user):
     apps = applications.get_applications()
@@ -100,14 +101,16 @@ def get_application_statuses(client, user):
         application_statuses.append((application, status))
     return application_statuses
 
-def _get_application_status(user, application, container):
+def _get_application_status(user, application, container, volumes=None):
     name = applications.get_application_name(user, application)
     if queue.task_exists(name):
         return applications.ApplicationStatus.UPDATING
     if container:
         return applications.ApplicationStatus.CREATED
-    else:
+    if volumes and any(vol is not None for vol in volumes.values()):
         return applications.ApplicationStatus.DELETED
+    else:
+        return applications.ApplicationStatus.NEVER_STARTED
 
 def get_all_running_applications():
     apps = applications.get_applications()
@@ -166,6 +169,20 @@ def get_main_container(client, user, application):
         return containers[0]
     else:
         return None
+
+def get_volumes(client, name=""):
+    return {volume.name: volume for volume in client.volumes.list(filters={"name": name})}
+
+def get_application_volumes(client, user, application):
+    application_volume_names = applications.get_application_volume_names(user, application)
+    
+    application_name = applications.get_application_name(user, application)
+    docker_volumes = get_volumes(client, application_name)
+    application_volumes = {
+        application_volume: docker_volumes.get(application_volume)
+        for application_volume in application_volume_names
+    }
+    return application_volumes
 
 def wait_until_up(url, timeout=APPLICATION_CREATE_TIMEOUT):
     start_time = time.time()

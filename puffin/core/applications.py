@@ -63,9 +63,10 @@ class Application:
 
 
 class ApplicationStatus(enum.Enum):
-    DELETED = 0
-    CREATED = 10
-    UPDATING = 20
+    NEVER_STARTED = 0
+    DELETED = 10
+    CREATED = 20
+    UPDATING = 30
     ERROR = 90
 
 
@@ -216,3 +217,11 @@ def update_application_settings(application_settings):
     elif application_settings.application_settings_id:
         db.session.delete(application_settings)
         db.session.commit()
+
+def get_application_volume_names(user, application):
+    application_name = get_application_name(user, application)
+    compose_volumes = application.volumes
+    application_volumes = ['{}_{}'.format(application_name, volume) for volume in compose_volumes]
+    return application_volumes
+    
+    
