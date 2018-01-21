@@ -95,7 +95,7 @@ def application_status(application_id):
 def apps():
     client = docker.get_client()
     app_statuses = docker.get_application_statuses(client, current_user)
-    apps = [a[0] for a in app_statuses if a[1] == applications.ApplicationStatus.CREATED]
+    apps = [a[0] for a in app_statuses if a[1] != applications.ApplicationStatus.NEVER_STARTED]
     return flask.render_template('applications.html', applications=apps)
 
 @app.route('/media/<path:path>')
